@@ -2,3 +2,6 @@ Revision history for Term-Sprog
 
 0.01    05 Dec 2008
         First version, released on an unsuspecting world.
+
+0.02    11 Dec 2008
+        remove the 'use 5.0010' requirement from the module.

@@ -1,6 +1,5 @@
 package Term::Sprog;
 
-use 5.010000;
 use strict;
 use warnings;
 
@@ -14,7 +13,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our $errcode = 0;
 our $errmsg  = '';
