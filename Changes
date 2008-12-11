@@ -4,4 +4,7 @@ Revision history for Term-Sprog
         First version, released on an unsuspecting world.
 
 0.02    11 Dec 2008
-        remove the 'use 5.0010' requirement from the module.
+        remove the 'use 5.0100' requirement from the module.
+
+0.03    11 Dec 2008
+        give correct executable rights to *.pl, *.pm and *.t files.
