@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Term-Sprog
-version:             0.03
+version:             0.04
 abstract:            Perl extension for displaying a progress indicator on a terminal.
 license:             ~
 author:              

@@ -3,6 +3,8 @@ package Term::Sprog;
 use strict;
 use warnings;
 
+use Time::HiRes qw( time );
+
 require Exporter;
 
 our @ISA = qw(Exporter);
@@ -13,7 +15,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 our $errcode = 0;
 our $errmsg  = '';
@@ -26,7 +28,7 @@ sub new {
     $errcode = 0;
     $errmsg  = '';
 
-    my %hash     = (freq => 1, base => 0, target => 1_000, quiet => 0);
+    my %hash     = (freq => 1, base => 0, target => 1_000, quiet => 0, test => 0);
     %hash        = (%hash, %{$_[1]}) if defined $_[1];
 
     my $format = defined $_[0] ? $_[0] : '%8c';
@@ -34,6 +36,7 @@ sub new {
     $self->{base}    = $hash{base};
     $self->{target}  = $hash{target};
     $self->{quiet}   = $hash{quiet};
+    $self->{test}    = $hash{test};
     $self->{format}  = $format;
     $self->{freq}    = $hash{freq};
     $self->{value}   = $hash{base};
@@ -92,7 +95,7 @@ sub new {
 
     $self->{tick}      = 0;
     $self->{out}       = 0;
-    $self->{sec_begin} = time;
+    $self->{sec_begin} = int(time * 100);
     $self->{sec_print} = $self->{sec_begin};
 
     $self->show;
@@ -108,9 +111,14 @@ sub whisper {
 
     $self->{line} = join('', $back, $blank, $back, @_, $self->{oldtext});
 
-    unless ($self->{quiet}) {
+    unless ($self->{test}) {
         local $| = 1;
-        print $self->{line};
+        if ($self->{quiet}) {
+            print @_;
+        }
+        else {
+            print $self->{line};
+        }
     }
 }
 
@@ -124,6 +132,8 @@ sub up    { my $self = shift; $self->{value} += defined $_[0] ? $_[0] : 1; $self
 sub down  { my $self = shift; $self->{value} -= defined $_[0] ? $_[0] : 1; $self->show_maybe; }
 sub close { my $self = shift; $self->{value} = undef;                      $self->show;       }
 
+sub ticks { my $self = shift; return $self->{tick} }
+
 sub DESTROY {
     my $self = shift;
     $self->close;
@@ -134,14 +144,19 @@ sub show_maybe {
 
     $self->{line} = '';
 
-    my $sec_now  = time;
+    my $sec_now  = int(time * 100);
     my $sec_prev = $self->{sec_print};
 
     $self->{sec_print} = $sec_now;
     $self->{tick}++;
 
     if ($self->{freq} eq 's') {
-        if ($sec_prev != $sec_now) {
+        if (int($sec_prev / 100) != int($sec_now / 100)) {
+            $self->show;
+        }
+    }
+    elsif ($self->{freq} eq 'd') {
+        if (int($sec_prev / 10) != int($sec_now / 10)) {
             $self->show;
         }
     }
@@ -172,7 +187,7 @@ sub show {
                 next;
             }
             if ($type eq 't') { # print (= append to $text) time elapsed in format 'hh:mm:ss'
-                my $unit = $self->{sec_print} - $self->{sec_begin};
+                my $unit = int(($self->{sec_print} - $self->{sec_begin}) / 100);
                 my $hour = int($unit / 3600);
                 my $min  = int(($unit % 3600) / 60);
                 my $sec  = $unit % 60;
@@ -231,7 +246,7 @@ sub show {
 
     $self->{line} = join('', $back, $blank, $back, $text);
 
-    unless ($self->{quiet}) {
+    unless ($self->{test} or $self->{quiet}) {
         local $| = 1;
         print $self->{line};
     }
@@ -272,6 +287,8 @@ Term::Sprog - Perl extension for displaying a progress indicator on a terminal.
   my last_line = $ctr->get_line;
 
   $ctr->close;
+
+  print "Number of ticks: ", $ctr->ticks, "\n";
 
 =head1 DESCRIPTION
 
@@ -322,6 +339,22 @@ Another example that counts upwards:
   }
 
   $ctr->close;
+
+At any time, after Term::Sprog->new(), you can query the number of ticks (i.e. number of calls to
+$ctr->up or $ctr->down) using the method 'ticks':
+
+  use Term::Sprog;
+
+  my $ctr = Term::Sprog->new('%6c', {freq => 's', base => 0, target => 70})
+    or die "Error 0010: Term::Sprog->new, (code $Term::Sprog::errcode) $Term::Sprog::errmsg";
+
+  for (1..4288) {
+      $ctr->up;
+  }
+
+  $ctr->close;
+
+  print "Number of ticks: ", $ctr->ticks, "\n";
 
 This example uses a simple progress bar in quiet mode (nothing is printed to STDOUT), but
 instead, the content of what would have been printed can now be extracted using the get_line() method:
@@ -401,6 +434,11 @@ refresh-frequency is set by default to every up() or down() call.
 This is a special case whereby the refresh-frequency on STDOUT  is set to every
 second.
 
+=item option {freq => 'd'}
+
+This is a special case whereby the refresh-frequency on STDOUT  is set to every
+1/10th of a second.
+
 =item option {base => 0}
 
 This specifies the base value from which to count. The default is 0
@@ -417,8 +455,15 @@ special ASCII characters to simulate blocks, rather than the sharp-symbol ('#').
 
 =item option {quiet => 1}
 
-This option disables any printing to STDOUT, but the content of the would be printed
-line is still available using the method get_line()
+This option disables most printing to STDOUT, but the content of the would be printed
+line is still available using the method get_line(). The whisper-method, however,
+still shows its output.
+
+=item option {test => 1}
+
+This option is used for testing purposes only, it disables all printing to STDOUT, even
+the whisper shows no output. But again, the content of the would be printed line is
+still available using the method get_line().
 
 =back
 

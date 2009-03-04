@@ -8,3 +8,8 @@ Revision history for Term-Sprog
 
 0.03    11 Dec 2008
         give correct executable rights to *.pl, *.pm and *.t files.
+
+0.04    11 Dec 2008
+        Bug fix in whisper-method.
+        add option freq=>'d' which allows a frequency of every 1/10 seconds.
+        This requires 'use Time::Hires'.
