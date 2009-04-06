@@ -13,3 +13,6 @@ Revision history for Term-Sprog
         Bug fix in whisper-method.
         add option freq=>'d' which allows a frequency of every 1/10 seconds.
         This requires 'use Time::Hires'.
+
+0.05    06 Apr 2009
+        update warranty

@@ -1,4 +1,4 @@
-Term-Sprog Version 0.02
+Term-Sprog Version 0.05
 
 This is a Perl extension for displaying a progress indicator on a terminal.
 ("Sprog" is a short form for "Show PROGress")
