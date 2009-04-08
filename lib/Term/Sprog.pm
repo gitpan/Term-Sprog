@@ -15,7 +15,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw();
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 our $errcode = 0;
 our $errmsg  = '';
@@ -490,9 +490,5 @@ Copyright (C) 2008 by Klaus Eichner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
-
-This library is distributed in the hope that it will be useful, but without
-any warranty; without even the implied warranty of merchantibility or fitness
-for a particular purpose.
 
 =cut
